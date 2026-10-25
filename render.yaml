@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: orphic-realms
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ORPHIC_GUEST_SECRET
+        generateValue: true
+      - key: BUDDY_ALLOWED_HOSTS
+        value: api.openai.com
