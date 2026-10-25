@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4bdf0">
+  <title>realms.chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app" id="app" aria-label="realms.chat">
+    <header class="topbar">
+      <div class="brand"><span class="brandmark">✿</span><span class="brandname">REALMS.CHAT</span><span class="live-dot connection-dot connecting" id="connectionDot" title="Connecting"></span></div>
+      <div class="header-right"><span class="status" id="connectionStatus">CONNECTING</span><span class="header-user" id="headerUser" title="Guest identity for this browser; no account or password"></span><button class="icon-btn settings-btn" id="settingsBtn" title="Options" aria-label="Options">⚙</button><button class="icon-btn popout-btn" id="popoutBtn" title="Open separate window" aria-label="Open separate window">↗</button></div>
+    </header>
+    <div class="tabrow">
+      <div class="tabs" id="channelTabs" role="tablist" aria-label="Chat channels"></div>
+      <button class="add-btn" id="addChannelBtn" type="button" aria-label="Open or add a channel" aria-expanded="false" title="Open a channel">+</button>
+      <div class="channel-menu hidden" id="channelMenu" role="menu"></div>
+    </div>
+    <div class="roombar">
+      <div class="room-title-wrap"><span class="room-icon" id="roomIcon">✧</span><span class="room-title" id="roomTitle">REALMS-WIDE</span></div>
+      <div class="context-tools">
+        <select id="gameSelect" aria-label="Current game" class="hidden">
+          <option value="island-of-nurn">Island of Nurn</option>
+          <option value="dragon-kingdom-raiders">Dragon Kingdom Raiders</option>
+          <option value="the-lounge">The Lounge</option>
+          <option value="etherwords">Etherwords</option>
+          <option value="audioscape">Audioscape</option>
+        </select>
+        <div id="callTools" class="call-tools hidden" aria-label="Audio and video calls">
+          <button class="call-btn" id="audioCallBtn" type="button" aria-label="Audio call" title="Start voice call"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.8 9 3.3l2 4.4-1.7 1.6a14 14 0 0 0 5.4 5.4l1.6-1.7 4.4 2-.5 2.5c-.2 1.1-1.2 1.8-2.3 1.7A16.5 16.5 0 0 1 4.8 6.1c-.1-1.1.6-2.1 1.7-2.3Z"/></svg></button>
+          <button class="call-btn" id="videoCallBtn" type="button" aria-label="Video call" title="Start video call"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="12" height="12" rx="1"/><path d="m15 10 6-3v10l-6-3z"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <section class="messages" id="messages" aria-live="polite" aria-label="Conversation"></section>
+    <form class="composer" id="composer">
+      <textarea id="messageInput" rows="1" maxlength="2000" placeholder="type a message…" aria-label="Write a message"></textarea>
+      <button class="send-btn" type="submit" id="sendBtn">SEND ↗</button>
+    </form>
+  </div>
+
+
+  <div class="overlay hidden" id="settingsOverlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <section class="dialog">
+      <header class="dialog-head"><span class="dialog-title" id="settingsTitle">OPTIONS / SETTINGS</span><button class="dialog-close" type="button" data-close="settingsOverlay" aria-label="Close options">×</button></header>
+      <div class="field"><label for="displayName">YOUR DISPLAY NAME (NO ACCOUNT)</label><input id="displayName" type="text" minlength="2" maxlength="24" autocomplete="nickname" placeholder="a whimsical name"></div>
+      <div class="field"><label for="buddyEndpoint">BUDDY API ENDPOINT</label><input id="buddyEndpoint" type="url" value="https://api.openai.com/v1/chat/completions" autocomplete="off" placeholder="https://api.openai.com/v1/chat/completions"></div>
+      <div class="field"><label for="buddyModel">MODEL NAME</label><input id="buddyModel" type="text" maxlength="120" placeholder="e.g. gpt-4.1-mini" autocomplete="off"></div>
+      <div class="field"><label for="buddyKey">API KEY / TOKEN (THIS BROWSER SESSION)</label><input id="buddyKey" type="password" autocomplete="off" placeholder="enter key for API Buddy"></div>
+      <div class="fineprint"><strong>GUEST BETA / KEY SAFETY</strong><br>No account or database is used. This browser keeps a local history cache, while the live server's shared message history is temporary and can clear when the free service restarts. The Buddy key is held only in the current page's memory; it is not saved to browser storage or a database. When you message Buddy, the key is sent to your realms.chat server over HTTPS and then to the selected provider. Only enable Buddy if you understand your provider's API billing; the Communicator itself does not require a paid tier. Your server must allow the provider hostname via <code>BUDDY_ALLOWED_HOSTS</code>.</div>
+      <label class="check-row"><input type="checkbox" id="showTimestamps" checked> Show message timestamps</label>
+      <div class="form-actions"><button class="soft-btn" type="button" data-close="settingsOverlay">CANCEL</button><button class="primary-btn" id="saveSettingsBtn" type="button">SAVE OPTIONS</button></div>
+    </section>
+  </div>
+
+  <div class="overlay hidden" id="newDmOverlay" role="dialog" aria-modal="true" aria-labelledby="newDmTitle">
+    <section class="dialog">
+      <header class="dialog-head"><span class="dialog-title" id="newDmTitle">NEW PRIVATE CHAT</span><button class="dialog-close" type="button" data-close="newDmOverlay" aria-label="Close new chat">×</button></header>
+      <div class="help">Choose someone who is online. No account or password is needed. Guest identity is tied to this browser.</div>
+      <form id="newDmForm" class="field"><label for="newDmName">ONLINE PLAYER</label><select id="newDmName" required><option value="">Loading online players…</option></select><div class="form-actions"><button class="soft-btn" id="refreshPlayersBtn" type="button">↻ REFRESH</button><button class="soft-btn" type="button" data-close="newDmOverlay">CANCEL</button><button class="primary-btn" type="submit">OPEN DM ↗</button></div></form>
+      <div class="auth-error" id="dmError" role="alert"></div>
+    </section>
+  </div>
+
+  <div class="overlay hidden" id="callOverlay" role="dialog" aria-modal="true" aria-labelledby="callTitle">
+    <section class="dialog call-dialog">
+      <header class="dialog-head"><span class="dialog-title" id="callTitle">CALL</span><button class="dialog-close" type="button" data-close="callOverlay" aria-label="Close call">×</button></header>
+      <div class="video-stage camera-off hidden" id="videoStage">
+        <video id="remoteVideo" class="remote-video" autoplay playsinline aria-label="Other person's live video"></video>
+        <div class="video-placeholder" id="videoPlaceholder"><div class="placeholder-art" id="placeholderArt">♡</div><span id="placeholderTitle">WAITING FOR VIDEO</span><small id="placeholderMessage">Their camera will appear here when they connect.</small></div>
+        <div class="local-tile"><video id="localVideo" autoplay muted playsinline aria-label="Your live camera preview"></video><span class="local-tile-label">YOU</span></div>
+        <div class="remote-nameplate" id="remoteNameplate">FRIEND</div>
+        <div class="stage-top"><span>REALMS CALL</span><span class="stage-live" id="stageLive">CONNECTING</span></div>
+        <div class="stage-bottom"><span id="videoStageStatus">WAITING FOR CAMERA</span><span>LIVE CALL</span></div>
+      </div>
+      <audio id="remoteAudio" autoplay></audio>
+      <div class="call-card" id="audioCard"><div class="call-avatar" id="callAvatar">♡</div><div class="call-contact" id="callContact">Friend</div><div class="call-status" id="callStatus">CALLING…</div></div>
+      <div class="incoming-actions hidden" id="incomingActions"><button class="primary-btn accept-call" id="acceptCallBtn" type="button">ACCEPT CALL</button><button class="soft-btn decline-call" id="declineCallBtn" type="button">DECLINE</button></div>
+      <div class="call-controls" id="activeCallControls">
+        <button class="call-control" id="callMicToggle" type="button" aria-pressed="false" title="Mute or unmute microphone">♬<span id="micLabel">MIC OFF</span></button>
+        <button class="call-control" id="callCamToggle" type="button" aria-pressed="false" title="Turn camera on or off">▣<span id="camLabel">CAM OFF</span></button>
+        <button class="call-control end" id="endCallPreviewBtn" type="button" title="End call and release media">×<span>END</span></button>
+      </div>
+      <div class="call-note" id="callNote">Calls require camera/microphone permissions. Your devices are only active during a call.</div>
+    </section>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js" defer></script>
+</body>
+</html>
