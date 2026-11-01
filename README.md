@@ -1,4 +1,4 @@
-## ORPHIC REALMS IS MADE WITH LOVE BY ELLAKNOR 
+## ORPHIC REALMS IS MADE WITH LOVE BY ellaknor  
 
 <!--
 **ORPHICREALMS/ORPHICREALMS** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
